@@ -7,85 +7,81 @@ from flask_restful import (Resource, Api, reqparse,
 import models
 
 todo_fields = {
-    'title': fields.String,
-    'url': fields.String,
-    'reviews': fields.List(fields.String)
+    'name': fields.String,
 }
 
 
 def todo_or_404(todo_id):
+    """if a todo doesn't exist, return a good error message"""
     try:
-        todo = models.todo.get(models.todo.id == todo_id)
-    except models.todo.DoesNotExist:
+        todo = models.Todo.get(models.Todo.id == todo_id)
+    except models.Todo.DoesNotExist:
         abort(404)
     else:
         return todo
 
 
 class TodoList(Resource):
+    """This class represents the set of todos"""
     def __init__(self):
+        """Start up the TodoList resource class"""
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
-            'title',
+            'name',
             required=True,
-            help='No todo title provided',
+            help='No todo name provided',
             location=['form', 'json']
-        )
-        self.reqparse.add_argument(
-            'url',
-            required=True,
-            help='No todo URL provided',
-            location=['form', 'json'],
-            type=inputs.url
         )
         super().__init__()
 
     def get(self):
+        """Get the set of todos"""
         todos = [marshal(todo, todo_fields)
                    for todo in models.Todo.select()]
-        return {'todos': todos}
+        return todos
 
     @marshal_with(todo_fields)
     def post(self):
+        """Create a new todo"""
         args = self.reqparse.parse_args()
         todo = models.Todo.create(**args)
+        #import pdb;
+        #pdb.set_trace()
         return (todo, 201, {
             'Location': url_for('resources.todos.todo', id=todo.id)}
                 )
 
 
 class Todo(Resource):
+    """This class represents a single todo"""
     def __init__(self):
+        """Start up the Todo resource class"""
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument(
-            'title',
+            'name',
             required=True,
-            help='No todo title provided',
+            help='No todo name provided',
             location=['form', 'json']
-        )
-        self.reqparse.add_argument(
-            'url',
-            required=True,
-            help='No todo URL provided',
-            location=['form', 'json'],
-            type=inputs.url
         )
         super().__init__()
 
     @marshal_with(todo_fields)
     def get(self, id):
+        """Get a todo"""
         return todo_or_404(id)
 
     @marshal_with(todo_fields)
     def put(self, id):
+        """Put a change into a todo"""
         args = self.reqparse.parse_args()
-        query = models.todo.update(**args).where(models.todo.id == id)
+        query = models.Todo.update(**args).where(models.Todo.id == id)
         query.execute()
-        return (models.todo.get(models.todo.id == id), 200,
+        return (models.Todo.get(models.Todo.id == id), 200,
                 {'Location': url_for('resources.todos.todo', id=id)})
 
     def delete(self, id):
-        query = models.todo.delete().where(models.todo.id == id)
+        """Delete a todo"""
+        query = models.Todo.delete().where(models.Todo.id == id)
         query.execute()
         return '', 204, {'Location': url_for('resources.todos.todos')}
 
