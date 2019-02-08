@@ -7,6 +7,7 @@ from flask_restful import (Resource, Api, reqparse,
 import models
 
 todo_fields = {
+    'id': fields.Integer,
     'name': fields.String,
 }
 
@@ -38,6 +39,8 @@ class TodoList(Resource):
         """Get the set of todos"""
         todos = [marshal(todo, todo_fields)
                    for todo in models.Todo.select()]
+        #import pdb;
+        #pdb.set_trace()
         return todos
 
     @marshal_with(todo_fields)
