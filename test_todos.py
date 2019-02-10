@@ -4,6 +4,9 @@ import os
 import json
 from app import create_app
 from models import DATABASE,Todo
+from flask import request
+
+
 
 
 class TodoTestCase(unittest.TestCase):
@@ -14,6 +17,8 @@ class TodoTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.todo = {'name': 'Get a new haircut'}
+        #import pdb;
+        #pdb.set_trace()
 
         # binds the app to the current context
         with self.app.app_context():
@@ -24,21 +29,23 @@ class TodoTestCase(unittest.TestCase):
 
     def test_todo_creation(self):
         """Test API can create a todo (POST request)"""
-        res = self.client().post('/api/v1/todos/', data=self.todo)
+        #import pdb;
+        #pdb.set_trace()
+        res = self.client().post('/api/v1/todos', data=self.todo)
         self.assertEqual(res.status_code, 201)
         self.assertIn('Get a new haircut', str(res.data))
 
     def test_api_can_get_all_todos(self):
         """Test API can get a todo (GET request)."""
-        res = self.client().post('/api/v1/todos/', data=self.todo)
+        res = self.client().post('/api/v1/todos', data=self.todo)
         self.assertEqual(res.status_code, 201)
-        res = self.client().get('/api/v1/todos/')
+        res = self.client().get('/api/v1/todos')
         self.assertEqual(res.status_code, 200)
         self.assertIn('Get a new haircut', str(res.data))
 
     def test_api_can_get_todo_by_id(self):
         """Test API can get a single todo by using it's id."""
-        rv = self.client().post('/api/v1/todos/', data=self.todo)
+        rv = self.client().post('/api/v1/todos', data=self.todo)
         self.assertEqual(rv.status_code, 201)
         result_in_json = json.loads(rv.data.decode('utf-8').replace("'", "\""))
         result = self.client().get(
@@ -49,7 +56,7 @@ class TodoTestCase(unittest.TestCase):
     def test_todo_can_be_edited(self):
         """Test API can edit an existing todo. (PUT request)"""
         rv = self.client().post(
-            '/api/v1/todos/',
+            '/api/v1/todos',
             data={'name': 'Have fun'})
         self.assertEqual(rv.status_code, 201)
         rv = self.client().put(
@@ -64,7 +71,7 @@ class TodoTestCase(unittest.TestCase):
     def test_todo_deletion(self):
         """Test API can delete an existing todo. (DELETE request)."""
         rv = self.client().post(
-            '/api/v1/todos/',
+            '/api/v1/todos',
             data={'name': 'Eat, pray and love'})
         self.assertEqual(rv.status_code, 201)
         res = self.client().delete('/api/v1/todos/1')
@@ -72,6 +79,7 @@ class TodoTestCase(unittest.TestCase):
         # Test to see if it exists, should return a 404
         result = self.client().get('/api/v1/todos/1')
         self.assertEqual(result.status_code, 404)
+
 
     def tearDown(self):
         """teardown all initialized variables."""

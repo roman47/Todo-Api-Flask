@@ -3,6 +3,7 @@ from flask import Flask, g, jsonify, render_template
 import config
 import models
 from resources.todos import todos_api
+from models import DATABASE,Todo
 app = Flask(__name__)
 app.register_blueprint(todos_api)
 
@@ -14,7 +15,10 @@ def my_todos():
 
 
 def create_app():
-    app.run(debug=config.DEBUG, host=config.HOST, port=config.PORT)
+    #app.run(debug=config.DEBUG, host=config.HOST, port=config.PORT)
+    DATABASE.connect(reuse_if_open=True)
+    DATABASE.create_tables([Todo], safe=True)
+    DATABASE.close()
     return app
 
 
